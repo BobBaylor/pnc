@@ -9,10 +9,26 @@ Don't breeak pncshell.py
 
 import os.path
 import sys
+import platform
 import string
 import time
 import traceback
 import datetime as dt
+
+def getPNCfilename():    # get a list filled with all the timestamp text lines
+    # determine the OS so we can use the proper path to the PNC data
+    myos = platform.system()    # returns 'Linux', 'Darwin', or 'Windows'
+    if 'Windows' in myos:                    # I'm on my Win box
+        return 'C:/Users/rab/Downloads/JpegData.PNC'
+    elif 'Darwin' in myos:                     # I'm at 260 or 7C
+        if 'guys' in platform.node():
+            return '/Users/guy/Downloads/JpegData.PNC'
+        else:    
+            return '/Users/bob/Downloads/JpegData.PNC'
+    else:   # I don't know where I am
+        print 'where am I?',myos
+        return '.'    #perhaps the PNC file is right under my nose
+
 
 def log_traceback(ex, ex_traceback):
     # print traceback.format_exception(ex.__class__, ex, ex_traceback)
@@ -84,8 +100,7 @@ def getPhotos(fileIn, outpath,outFNameBase,fileNo,bMoveSrc):
 
 def main(argv):
     tExtra = '' if len(argv) < 2 else argv[1]   # no cmd line arg means create dir based on current time
-    getPhotos("C://Users//rab//Downloads//JpegData.PNC",tExtra,'garage',0,True)
-    #   getPhotos("/Users/bob/Downloads/JpegData.PNC",argv[1],'test',0,True)
+    getPhotos(getPNCfilename(),tExtra,'garage',0,True)
 
 if __name__ == '__main__':
     main(sys.argv)
