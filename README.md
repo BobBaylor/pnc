@@ -9,7 +9,7 @@ Panasonic's [viewer app](http://panasonic.net/pcc/cgi-bin/products/netwkcam/down
  * First, you need to "install" it:
    * You need python to use this script. Macs and Linux computers come with python. Windows, not so much. Any python will do, I think, but I've only tested it with 2.7 so if you see a choice of installing 2.something or 3.something, install the 2.something.
   * Put the script (pnc.py) into some folder on your computer. 
-  * Edit line 67 to point to the place your browser puts downloads.
+  * Edit getPNCfilename() to point to the place your browser puts downloads. You could just insert a new line 12 such as ```    return 'C:\downloads'``` or whever your folder is. Be sure to include 4 spaces at the start of the line (before the return) or python will complain about your indenting.
 
  * Then, to run it:
    * open a command shell in the folder that you put pnc.py
