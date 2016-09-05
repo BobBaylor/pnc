@@ -21,6 +21,9 @@ Panasonic's [viewer app](http://panasonic.net/pcc/cgi-bin/products/netwkcam/down
    * unpack the JPEG images as separate files into the folder it just created
    * move the original JpegData.PNC file into the new folder
   
+## How do I get me one of these Panasonic IP cameras?
+They're old, low res (640x480) cameras with small storage and no "cloud" awareness. You don't want one. You should get a Nest camera or whatever the next great IP camera will turn out to be. This script is only usefull if you already have one of these old cameras. Even then, it's not very useful.
+
 ## Bugs and apologies
  * Some images come out all black. It seldom happens so I haven't bothered to see what's wrong. 
  * It's one the first python scripts I ever wrote, so it's not very ["pythonic"](https://www.python.org/dev/peps/pep-0008/). 
