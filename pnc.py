@@ -28,11 +28,11 @@ def log_traceback(ex, ex_traceback):
         print one_line
 
 
-def make_output_dir(file_in, out_path):
+def make_output_dir(file_in, text_extra):
     """ create the ouput dir """
     time_file = os.path.getmtime(file_in)
     date_time_file = dt.datetime.fromtimestamp(time_file)
-    out_dir = ''.join([date_time_file.strftime('%Y-%m-%d %H-%M-%S'), out_path])
+    out_dir = ''.join([date_time_file.strftime('%Y-%m-%d %H-%M-%S'), text_extra])
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     return out_dir
@@ -45,7 +45,7 @@ def get_pnc_bytes(file_in):
     print "Found %d bytes in %s" % (len(bytes_in), file_in)
     return bytes_in
 
-def get_photos(file_in, out_path, out_file_name_base, b_move_src):
+def get_photos(file_in, text_extra, out_file_name_base, b_move_src):
     """The PNC is a panasonic proprietary file format that simple pre-pends a header onto a bunch of
         jpeg images. Extracting the jpegs into usable files is simply a matter of slicing them out -
         each image is a complete jpeg with header, color tables, etc."""
@@ -53,20 +53,19 @@ def get_photos(file_in, out_path, out_file_name_base, b_move_src):
     #pylint: disable=too-many-locals
     byte_last = ''
     try:
-        out_dir = make_output_dir(file_in, out_path)
+        out_dir = make_output_dir(file_in, text_extra)
         bytes_in = get_pnc_bytes(file_in)
         byte_last = '1'         # init it to anything except 0xff
         b_first_time = True       # don't close and re-open the first output file
         b_in_image = False    # skip the PNC preamble
-
         file_count = 0
-        file_out = os.path.join(out_path, "%s%04d.jpg" % (out_file_name_base, file_count))
+        file_out = os.path.join(out_dir, "%s%04d.jpg" % (out_file_name_base, file_count))
         image = open(file_out, "wb")
 
         for byte_val in bytes_in:
             if (byte_last == b'\xff') and (byte_val == b'\xd8'):
                 b_in_image = True
-                file_out = os.path.join(out_path, "%s%04d.jpg" % (out_file_name_base, file_count))
+                file_out = os.path.join(out_dir, "%s%04d.jpg" % (out_file_name_base, file_count))
                 if not b_first_time:
                     image.close()
                     image = open(file_out, "wb")
@@ -78,7 +77,7 @@ def get_photos(file_in, out_path, out_file_name_base, b_move_src):
             byte_last = byte_val
 
         if b_move_src:
-            os.rename(file_in, "%s//JpegData.PNC"%out_path)
+            os.rename(file_in, "%s//JpegData.PNC"%out_dir)
         image.close()
         return True, file_count, out_dir
     except (ValueError, IndexError) as err:
