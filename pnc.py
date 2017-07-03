@@ -1,94 +1,102 @@
 #!/usr/bin/env python
-
+"""  PNC.PY slices out the images in an old panasonic IP cam file
+"""
 import os.path
 import sys
 import platform
-import string
 import time
 import traceback
 import datetime as dt
 
-def getPNCfilename():    
-    'determine the OS so we can use the proper path to the PNC data'
+def get_pnc_file_name():
+    """determine the OS so we can use the proper path to the PNC data"""
     myos = platform.system()    # returns 'Linux', 'Darwin', or 'Windows'
     if 'Windows' in myos:                    # I'm on my Win box
-        return 'C:/Users/rab/Downloads/JpegData.PNC'
+        return r'C:/Users/rab/Downloads/JpegData.PNC'
     elif 'Darwin' in myos:                     # I'm at 260 or 7C
         if 'guys' in platform.node():
-            return '/Users/guy/Downloads/JpegData.PNC'
-        else:    
-            return '/Users/bob/Downloads/JpegData.PNC'
-    else:   # I don't know where I am
-        print 'where am I?',myos
-        return '.'    #perhaps the PNC file is right under my nose
+            return r'/Users/guy/Downloads/JpegData.PNC'
+        return r'/Users/bob/Downloads/JpegData.PNC'
+    print 'where am I?', myos
+    return '.'    #perhaps the PNC file is right under my nose
 
 
 def log_traceback(ex, ex_traceback):
+    """ format exception traceback"""
     tb_lines = traceback.format_exception(ex.__class__, ex, ex_traceback)
-    for x in tb_lines:
-        print x
+    for one_line in tb_lines:
+        print one_line
 
 
-def getPhotos(fileIn, outpath,outFNameBase,fileNo,bMoveSrc):
+def make_output_dir(file_in, out_path):
+    """ create the ouput dir """
+    time_file = os.path.getmtime(file_in)
+    date_time_file = dt.datetime.fromtimestamp(time_file)
+    out_dir = ''.join([date_time_file.strftime('%Y-%m-%d %H-%M-%S'), out_path])
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
+    return out_dir
+
+def get_pnc_bytes(file_in):
+    """ read in the raw file """
+    pnc_file = open(file_in, "rb")
+    bytes_in = pnc_file.read()            # get the entire file
+    pnc_file.close()
+    print "Found %d bytes in %s" % (len(bytes_in), file_in)
+    return bytes_in
+
+def get_photos(file_in, out_path, out_file_name_base, b_move_src):
     """The PNC is a panasonic proprietary file format that simple pre-pends a header onto a bunch of
         jpeg images. Extracting the jpegs into usable files is simply a matter of slicing them out -
         each image is a complete jpeg with header, color tables, etc."""
-
-    bLast = ''
+    # I use abot 16 locals but pylint says 15 max
+    #pylint: disable=too-many-locals
+    byte_last = ''
     try:
-        fileCount = 0
-        timeStart = time.time()
-        y = os.path.getmtime(fileIn)
-        z = dt.datetime.fromtimestamp(y)
-        outpath = ''.join([z.strftime('%Y-%m-%d %H-%M-%S'),outpath])
-        pnc = open(fileIn,"rb")
-        if not os.path.isdir(outpath):
-            os.makedirs(outpath)
-        bytesIn = pnc.read()            # get the entire file
-        print "Found %d bytes in %s" % (len(bytesIn), fileIn)
-        bLast = '1'         # init it to anything except 0xff
-        bFirst = True       # don't close and re-open the first output file
-        bInImage = False    # skip the PNC preamble
+        out_dir = make_output_dir(file_in, out_path)
+        bytes_in = get_pnc_bytes(file_in)
+        byte_last = '1'         # init it to anything except 0xff
+        b_first_time = True       # don't close and re-open the first output file
+        b_in_image = False    # skip the PNC preamble
 
-        fileOut = os.path.join(outpath,"%s%04d.jpg" % (outFNameBase,fileNo))
-        image = open(fileOut,"wb")
+        file_count = 0
+        file_out = os.path.join(out_path, "%s%04d.jpg" % (out_file_name_base, file_count))
+        image = open(file_out, "wb")
 
-        for bv in bytesIn:
-            if (bLast == b'\xff') and (bv == b'\xd8'):
-                bInImage = True
-                fileOut = os.path.join(outpath,"%s%04d.jpg" % (outFNameBase,fileNo))
-                if not bFirst:
+        for byte_val in bytes_in:
+            if (byte_last == b'\xff') and (byte_val == b'\xd8'):
+                b_in_image = True
+                file_out = os.path.join(out_path, "%s%04d.jpg" % (out_file_name_base, file_count))
+                if not b_first_time:
                     image.close()
-                    image = open(fileOut,"wb")
-                fileNo += 1
-                fileCount += 1
-                image.write( b'\xff' ),
-                bFirst = False
-            if bInImage:
-                image.write( bv ),
-            bLast = bv
+                    image = open(file_out, "wb")
+                file_count += 1
+                image.write(b'\xff')
+                b_first_time = False
+            if b_in_image:
+                image.write(byte_val)
+            byte_last = byte_val
 
-        pnc.close()
-        if bMoveSrc:
-            os.rename( fileIn, "%s//JpegData.PNC" % (outpath) )
+        if b_move_src:
+            os.rename(file_in, "%s//JpegData.PNC"%out_path)
         image.close()
-        secs = time.time() - timeStart
-        print "Wrote %d files in dir %s in %.2f seconds" % (fileCount, outpath, secs)
-        return True
-
+        return True, file_count, out_dir
     except (ValueError, IndexError) as err:
         _, _, ex_traceback = sys.exc_info()
         log_traceback(err, ex_traceback)
-        if not os.path.isfile( fileIn ):
-            print "because %s doesn't seem to exist." % (fileIn)
+        if not os.path.isfile(file_in):
+            print "because %s doesn't seem to exist."%(file_in)
         print "Did nothing",
-        return False
+        return False, file_count, out_dir
 
 
 def main(argv):
-    tExtra = '' if len(argv) < 2 else argv[1]   # no cmd line arg means create dir based on current time
-    getPhotos(getPNCfilename(),tExtra,'garage',0,True)
+    """ no cmd line arg means create dir based on current time """
+    text_extra = '' if len(argv) < 2 else argv[1]
+    time_start = time.time()
+    _, file_count, out_dir = get_photos(get_pnc_file_name(), text_extra, 'garage', True)
+    secs = time.time() - time_start
+    print "Wrote %d files in dir %s in %.2f seconds"%(file_count, out_dir, secs)
 
 if __name__ == '__main__':
     main(sys.argv)
-
