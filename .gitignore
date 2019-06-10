@@ -1,0 +1,6 @@
+*.jpg
+*.pyc
+Thumbs.db
+20**/
+old**/
+plain

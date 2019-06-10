@@ -1,10 +1,13 @@
-#----------------------------------------------------------------------
-# A wrapper around my pnc.py module
-#----------------------------------------------------------------------
+"""
+A wrapper around my pnc.py module
+"""
+
+import os.path
 
 import wx
+import wx.lib.filebrowsebutton as filebrowse
+
 import pnc
-import  wx.lib.filebrowsebutton as filebrowse
 
 class MyFrame(wx.Frame):
     """
@@ -12,7 +15,7 @@ class MyFrame(wx.Frame):
     and has a simple menu.
 
     Use this file inFileBtn
-    Write this root name TextEntry 
+    Write this root name TextEntry
     and starting number TextEntry
     To here outDirRootButton
     Optional subdirectory TextEntry
@@ -24,120 +27,109 @@ class MyFrame(wx.Frame):
                           pos=(150, 150), size=(wide, 270))
         # make a minimalist menu bar
         self.CreateStatusBar()
-        menuBar = wx.MenuBar()
+        menu_bar = wx.MenuBar()
         menu1 = wx.Menu()
-        menu1.Append(101,'&Close','Close this frame')
-        self.SetMenuBar( menuBar )
+        menu1.Append(101, '&Close', 'Close this frame')
+        self.SetMenuBar(menu_bar)
         self.Bind(wx.EVT_MENU, self.Close, id=101)
 
         # Now create the Panel to put the other controls on.
-        self.panel = wx.Panel(self,wx.ID_ANY)
+        self.panel = wx.Panel(self, wx.ID_ANY)
         # Use a sizer to layout the controls, stacked vertically and with
         # a 6 pixel border around each
         space = 6
         sflags = wx.ALL
-        sizer = wx.BoxSizer( wx.VERTICAL )
-        x = self
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        # x = self
         # sizer.Add(self.panel, wx.EXPAND )
         # and a few controls
-        text = wx.StaticText(x, -1, "Browse to the .pnc file, choose a root and folder name, and press Do It!")
+        text = wx.StaticText(self, -1, "Browse to the .pnc file, choose a root and folder name, and press Do It!")         #pylint: disable=line-too-long
         text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
         text.SetSize(text.GetBestSize())
-        sizer.Add( text,                  0, sflags, space)
-       
-        self.inFileBtn = filebrowse.FileBrowseButton(x, -1, size=(wide-10, -1), 
-            changeCallback = self.fbbCallback, labelText='Use this PNC file')
-        self.inFileBtn.SetValue( '/Users/guy/Downloads/JpegData.PNC')
-        sizer.Add( self.inFileBtn,        0, sflags, space)
+        sizer.Add(text, 0, sflags, space)
 
-        self.outDirRootButton = filebrowse.DirBrowseButton(x, -1, size=(wide-10, -1),  
-            changeCallback = self.outDirRootButtonCallback, labelText='To put JPG files here') 
-        # self.outDirRootButton.SetValue( '/Users/guy/Pictures' )
-        self.outDirRootButton.SetValue( '/Users/guy/python/test' )
-        
-        # self.outDirRootButton.callCallback = False
-        sizer.Add( self.outDirRootButton, 0, sflags, space)
- 
-                # file name root and starting number 
-        hsizer = wx.BoxSizer( wx.HORIZONTAL )
-        l1 = wx.StaticText(x, -1, "Optional new dir:")
-        hsizer.Add( l1,                    0, sflags, space )
+        self.btn_infile = filebrowse.FileBrowseButton(self, -1, size=(wide-10, -1),
+                                                      changeCallback=self.cback_infile,
+                                                      labelText='Use this PNC file')
+        self.btn_infile.SetValue('/Users/guy/Downloads/JpegData.PNC')
+        sizer.Add(self.btn_infile, 0, sflags, space)
 
-        self.mkDirCtrl = wx.TextCtrl( x, -1, '')              
-        hsizer.Add( self.mkDirCtrl,     0, sflags, space )
- 
-        l2 = wx.StaticText(x, -1, "Filename root:")
-        hsizer.Add( l2,                    0, sflags, space )
+        self.file_browse_root = filebrowse.DirBrowseButton(self, -1, size=(wide-10, -1),
+                                                           changeCallback=self.cback_file_root,         #pylint: disable=line-too-long
+                                                           labelText='To put JPG files here')
+        # self.file_browse_root.SetValue( '/Users/guy/Pictures' )
+        self.file_browse_root.SetValue('/Users/guy/python/test')
 
-        self.fileRootCtrl = wx.TextCtrl( x, -1, 'gcam')              
-        hsizer.Add( self.fileRootCtrl,     0, sflags, space )
- 
-        l3 = wx.StaticText(x, -1, "File number start:")
-        hsizer.Add( l3,                    0, sflags, space )
+        # self.file_browse_root.callCallback = False
+        sizer.Add(self.file_browse_root, 0, sflags, space)
 
-        self.fileNumCtrl = wx.TextCtrl( x, -1, '0')              
-        hsizer.Add( self.fileNumCtrl,      0, sflags, space )
-        sizer.Add( hsizer,                0, sflags, space)
+                # file name root and starting number
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(wx.StaticText(self, -1, "Optional new dir:"), 0, sflags, space)
 
-        self.cb = wx.CheckBox( x, -1, 'Move Input file, too')
-        sizer.Add( self.cb,               0, sflags, space)
+        self.tc_out_dir = wx.TextCtrl(self, -1, '')
+        hsizer.Add(self.tc_out_dir, 0, sflags, space)
+
+        hsizer.Add(wx.StaticText(self, -1, "Filename root:"), 0, sflags, space)
+
+        self.tc_out_fname = wx.TextCtrl(self, -1, 'gcam')
+        hsizer.Add(self.tc_out_fname, 0, sflags, space)
+
+        # hsizer.Add(wx.StaticText(self, -1, "File number start:"), 0, sflags, space)
+
+        sizer.Add(hsizer, 0, sflags, space)
+
+        self.cb_move_file = wx.CheckBox(self, -1, 'Move Input file, too')
+        sizer.Add(self.cb_move_file, 0, sflags, space)
 
                # bind the button events to handlers
-        hsizer2 = wx.BoxSizer( wx.HORIZONTAL )
-        funbtn = wx.Button(x, -1, "Do it")
-        self.Bind(wx.EVT_BUTTON, self.OnFunButton, funbtn)
-        hsizer2.Add( funbtn,                0, sflags, space)
-        btn = wx.Button(x, -1, "Close")
-        self.Bind(wx.EVT_BUTTON, self.OnTimeToClose, btn)
-        hsizer2.Add( btn,                   0, sflags, space)
-        # self.result = wx.TextCtrl(x, -1, '')
-        # hsizer2.Add( self.result,                   0, sflags, space)
-
-        sizer.Add( hsizer2,                0, sflags, space)
-        
+        hsizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        funbtn = wx.Button(self, -1, "Do it")
+        self.Bind(wx.EVT_BUTTON, self.evh_doit, funbtn)
+        hsizer2.Add(funbtn, 0, sflags, space)
+        btn = wx.Button(self, -1, "Close")
+        self.Bind(wx.EVT_BUTTON, self.evh_close, btn)
+        hsizer2.Add(btn, 0, sflags, space)
+        sizer.Add(hsizer2, 0, sflags, space)
         self.SetSizer(sizer)
-        
 
-    def OnTimeToClose(self, evt):
+
+    def evh_close(self, evt):             #pylint: disable=unused-argument
         """Event handler for the button click."""
-        # print "See ya later!"
         self.Close()
 
-    def OnFunButton(self, evt):
+    def evh_doit(self, evt):               #pylint: disable=unused-argument
         """Event handler for the button click."""
-        self.SetStatusText( 'working...')
-        # self.delay(0.1) working doesn't show in the panel.. wtf?
+        self.SetStatusText('working...')
         print ''
-        oDir = self.outDirRootButton.GetValue()
-        mkDir = self.mkDirCtrl.GetValue()
-        if len( mkDir ) > 0:
-            oDir = oDir + '/'
-            oDir = oDir + mkDir
-        fNum = int( self.fileNumCtrl.GetValue() )
-        # print self.inFileBtn.GetValue(), ' to ', oDir
-        # print 'With', self.cb.GetValue(),  self.fileRootCtrl.GetValue(), '%04d' % fNum 
-        bIsOk = pnc.getPhotos(self.inFileBtn.GetValue(),oDir,self.fileRootCtrl.GetValue(),fNum,self.cb.GetValue())
-        if bIsOk:
-            self.SetStatusText( 'Done!')
+        out_dir = self.file_browse_root.GetValue()
+        out_new_dir = self.tc_out_dir.GetValue()
+        out_dir = os.path.join(out_dir, out_new_dir)
+        b_success = pnc.get_photos(self.btn_infile.GetValue(),
+                                   out_dir, self.tc_out_fname.GetValue(),
+                                   self.cb_move_file.GetValue())
+        if b_success:
+            self.SetStatusText('Done!')
         else:
-            self.SetStatusText( 'Failed')
+            self.SetStatusText('Failed')
 
-    def fbbCallback(self, evt):
-        # print('FileBrowseButton: %s\n' % evt.GetString())
+    def cback_infile(self, evt):               #pylint: disable=unused-argument
+        """ dummy callback  """
         pass
 
-    def outDirRootButtonCallback(self, evt):
-        # print('outDirButton: %s\n' % evt.GetString())
+    def cback_file_root(self, evt):  #pylint: disable=unused-argument
+        """ dummy callback  """
         pass
 
 class MyApp(wx.App):
-    def OnInit(self):
+    """ a simple GUI """
+    def OnInit(self):      #pylint: disable=invalid-name
+        """ let's get this party started  """
         frame = MyFrame(None, "Panasonic .PNC to .JPG converter")
         self.SetTopWindow(frame)
         frame.Show(True)
         return True
-        
-# app = MyApp(redirect=True)
-app = MyApp()
-app.MainLoop()
 
+# app = MyApp(redirect=True)
+app = MyApp()              #pylint: disable=invalid-name
+app.MainLoop()
