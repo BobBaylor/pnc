@@ -65,9 +65,10 @@ def get_photos(file_in, text_extra, out_file_name_base, b_move_src):
         file_count = 0
         file_out = os.path.join(out_dir, "%s%04d.jpg" % (out_file_name_base, file_count))
         image = open(file_out, "wb")
-        
+        byte_ff = bytearray([0xff])
+        byte_d8 = bytearray([0xd8])
         for byte_val in bytes_in:
-            if (byte_last == 0xff) and (byte_val == 0xd8):
+            if (byte_last == byte_ff) and (byte_val == byte_d8):
                 b_in_image = True
                 file_out = os.path.join(out_dir, "%s%04d.jpg" % (out_file_name_base, file_count))
                 if not b_first_time:
