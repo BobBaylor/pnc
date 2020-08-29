@@ -7,7 +7,7 @@ Mid 2000s era Panasonic IP cameras such as the BL-C140A (the one I have) can sto
 Panasonic's [viewer app](http://panasonic.net/pcc/cgi-bin/products/netwkcam/download_other/tbookmarka_m.cgi?mm=2010050617102616) (Windows only) has a primitive UI and no way to save more than one image at a time. I took a look at a PNC file one day (when I was supposed to be doing something else, I'm sure), and noticed that the PNC file appears to be just a bunch of JPEG files stuck on the end of a header.  
 ## How do I use it?
  * First, you need to "install" it:
-   * You need python to use this script. Macs and Linux computers come with python. Windows, not so much. Any python will do, I think, but I've only tested it with 2.7 so if you see a choice of installing 2.something or 3.something, install the 2.something.
+   * You need python to use this script. Macs and Linux computers come with python. Windows, not so much. ~~Any python will do, I think, but I've only tested it with 2.7 so if you see a choice of installing 2.something or 3.something, install the 2.something.~~ It's now ported to python 3.7 so install that.
   * Put the script (pnc.py) into some folder on your computer. 
   * Edit getPNCfilename() to point to the place your browser puts downloads. You could just insert a new line 12 such as ```    return 'C:\downloads'``` or whever your folder is. Be sure to include 4 spaces at the start of the line (before the return) or python will complain about your indenting.
 
