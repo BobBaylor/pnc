@@ -2,6 +2,7 @@
 """  PNC.PY slices out the images in an old panasonic IP cam file
 """
 import os.path
+import shutil
 import sys
 import platform
 import time
@@ -65,7 +66,7 @@ def get_photos(file_in, text_extra, out_file_name_base, b_move_src):
         file_count = 0
         file_out = os.path.join(out_dir, "%s%04d.jpg" % (out_file_name_base, file_count))
         image = open(file_out, "wb")
-        
+
         for byte_val in bytes_in:
             if (byte_last == 0xff) and (byte_val == 0xd8):
                 b_in_image = True
@@ -83,7 +84,7 @@ def get_photos(file_in, text_extra, out_file_name_base, b_move_src):
             byte_last = byte_val
 
         if b_move_src:
-            os.rename(file_in, "%s//JpegData.PNC"%out_dir)
+            shutil.move(file_in, "%s//JpegData.PNC"%out_dir)
         image.close()
         return True, file_count, out_dir
     # except (ValueError, IndexError, WindowsError) as err:
