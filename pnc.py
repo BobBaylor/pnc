@@ -4,25 +4,14 @@
 import os.path
 import shutil
 import sys
-import platform
+# import platform
 import time
 import traceback
 import datetime as dt
 
 def get_pnc_file_name():
-    """determine the OS so we can use the proper path to the PNC data"""
-    myos = platform.system()    # returns 'Linux', 'Darwin', or 'Windows'
-    if 'Windows' in myos:                    # I'm on my Win box
-        return r'C:/Users/rab/Downloads/JpegData.PNC'
-    elif 'Darwin' in myos:                     # I'm at 260 or 7C
-        return os.path.join(os.path.expanduser('~'),'Downloads','JpegData.PNC')
-        #if 'guys' in platform.node():
-        #    return r'/Users/guy/Downloads/JpegData.PNC'
-        #elif 'MacBook' in platform.node():
-        #    return r'/Users/bobbaylor/Downloads/JpegData.PNC'
-        #return r'/Users/bob/Downloads/JpegData.PNC'
-    print('where am I?', myos)
-    return '.'    #perhaps the PNC file is right under my nose
+    """Assume the PNC data is in the current user Downloads"""
+    return os.path.join(os.path.expanduser('~'),'Downloads','JpegData.PNC')
 
 
 def log_traceback(ex, ex_traceback):
