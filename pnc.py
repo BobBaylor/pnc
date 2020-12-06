@@ -15,11 +15,12 @@ def get_pnc_file_name():
     if 'Windows' in myos:                    # I'm on my Win box
         return r'C:/Users/rab/Downloads/JpegData.PNC'
     elif 'Darwin' in myos:                     # I'm at 260 or 7C
-        if 'guys' in platform.node():
-            return r'/Users/guy/Downloads/JpegData.PNC'
-        elif 'MacBook' in platform.node():
-            return r'/Users/bobbaylor/Downloads/JpegData.PNC'
-        return r'/Users/bob/Downloads/JpegData.PNC'
+        return os.path.join(os.path.expanduser('~'),'Downloads','JpegData.PNC')
+        #if 'guys' in platform.node():
+        #    return r'/Users/guy/Downloads/JpegData.PNC'
+        #elif 'MacBook' in platform.node():
+        #    return r'/Users/bobbaylor/Downloads/JpegData.PNC'
+        #return r'/Users/bob/Downloads/JpegData.PNC'
     print('where am I?', myos)
     return '.'    #perhaps the PNC file is right under my nose
 
